@@ -1,6 +1,10 @@
 '''Example usage (from parent directory):
 `python -m learning_to_simulate.pca_test`
 
+Refs:
+https://en.wikipedia.org/wiki/Principal_component_analysis
+https://towardsdatascience.com/svd-in-machine-learning-pca-f25cf9b837ae
+
 '''
 
 import tensorflow.compat.v1 as tf
