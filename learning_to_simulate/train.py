@@ -439,7 +439,6 @@ def _read_metadata(data_path):
 
 def main(_):
   """Train or evaluates the model."""
-
   if FLAGS.mode in ['train', 'eval']:
     estimator = tf.estimator.Estimator(
         get_one_step_estimator_fn(FLAGS.data_path, FLAGS.noise_std),

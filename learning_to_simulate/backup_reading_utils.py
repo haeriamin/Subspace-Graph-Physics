@@ -138,3 +138,56 @@ def split_trajectory(context, features, window_length=7):
   model_input_features['position'] = tf.stack(pos_stack)
 
   return tf.data.Dataset.from_tensor_slices(model_input_features)
+
+
+def get_tensor_dependencies(tensor):
+    # If a tensor is passed in, get its op
+    try:
+        tensor_op = tensor.op
+    except:
+        tensor_op = tensor
+    # Recursively analyze inputs
+    dependencies = []
+    for inp in tensor_op.inputs:
+        new_d = get_tensor_dependencies(inp)
+        non_repeated = [d for d in new_d if d not in dependencies]
+        dependencies = [*dependencies, *non_repeated]
+    # If we've reached the "end", return the op's name
+    if len(tensor_op.inputs) == 0:
+        dependencies = [tensor_op.name]
+    # Return a list of tensor op names
+    return dependencies
+
+
+# added:
+def apply_pca(context, features, mode_number=256):
+  """Apply PCA to the entire trajectory."""
+
+  trajectory_length = features['position'].get_shape().as_list()[0]
+  
+  # print(features['position'][1].get_shape().as_list())
+
+  model_input_features = {}
+  # Prepare the context features per step.
+  # model_input_features['particle_type'] = tf.tile(
+  #     tf.expand_dims(context['particle_type'], axis=0),
+  #     [mode_number, 1])
+
+  print(context['particle_type'])
+  pos_sub = []
+  for idx in range(mode_number):
+    # apply pca here
+    pos_sub.append(features['position'][idx])
+    print(features['position'][idx])
+    dependencies = get_tensor_dependencies(features['position'][idx])
+    print(dependencies)
+    r = [idx,-1,2]
+    with tf.Session() as sess:
+      poss = sess.run(features['position'][idx])#, feed_dict = {position:r})
+      # poss = sess.run(pos)
+    print(poss)
+
+  # Get the corresponding positions
+  model_input_features['position'] = tf.stack(pos_sub)
+
+  return tf.data.Dataset.from_tensor_slices(model_input_features)
