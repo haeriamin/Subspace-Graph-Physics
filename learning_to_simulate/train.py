@@ -113,6 +113,12 @@ def prepare_inputs(tensor_dict):
 
   # Compute the number of particles per example.
   num_particles = tf.shape(pos)[0]
+  
+  # added:
+  # with tf.Session() as sess:
+  #   Yn_val = sess.run(num_particles)
+  # print(Yn_val)
+
   # Add an extra dimension for stacking via concat.
   tensor_dict['n_particles_per_example'] = num_particles[tf.newaxis]
 

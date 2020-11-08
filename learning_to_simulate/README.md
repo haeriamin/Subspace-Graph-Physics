@@ -23,7 +23,7 @@ If you use the code here please cite this paper:
 
 ## Example usage: train a model and display a trajectory
 
-<!-- ![WaterRamps rollout](images/water_ramps_rollout.gif) -->
+![WaterRamps rollout](images/water_ramps_rollout.gif)
 
 After downloading the repo, and from the parent directory. Install dependencies:
 
