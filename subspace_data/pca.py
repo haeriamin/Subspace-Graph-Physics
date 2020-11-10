@@ -8,7 +8,7 @@ https://towardsdatascience.com/svd-in-machine-learning-pca-f25cf9b837ae
 import numpy as np
 
 
-def pca_evd_np(X2D, mode_number):
+def evd_np(X2D, mode_number):
 
     particle_number = X2D.shape[1]
 

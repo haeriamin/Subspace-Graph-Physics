@@ -1,6 +1,6 @@
 '''
 Example usage (from parent directory):
-'python -m pca.test_pca_evd_np'
+'python -m subspace_data.test.test_pca_evd_np'
 
 Refs:
 https://en.wikipedia.org/wiki/Principal_component_analysis
