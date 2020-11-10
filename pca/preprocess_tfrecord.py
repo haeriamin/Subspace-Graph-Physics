@@ -1,4 +1,7 @@
 '''
+Example usage (from parent directory):
+`python -m pca.preprocess_tfrecord`
+
 Refs:
 https://medium.com/mostly-ai/tensorflow-records-what-they-are-and-how-to-use-them-c46bc4bbb564
 https://aihub.cloud.google.com/u/0/p/products%2Fcd31a10b-85db-4c78-830c-a3794dd606ce
@@ -12,7 +15,7 @@ import numpy as np
 import tensorflow.compat.v1 as tf
 
 from learning_to_simulate import reading_utils
-from learning_to_simulate import apply_pca
+from pca import apply_pca
 
 
 if __name__ == '__main__':
@@ -70,11 +73,13 @@ if __name__ == '__main__':
                 X2D[2*i+k][j] = X3D[i][j][k]
 
     # Apply PCA to 2D data
-    W, Y2D = apply_pca.pca_evd_np(X2D, MODE_NUMBER)
+    id, W, Y2D = apply_pca.pca_evd_np(X2D, MODE_NUMBER)
 
     # Convert 2D data to 3D data
     Y3D = np.zeros((timestep_number, MODE_NUMBER, dim_number))
     for i in range(2*timestep_number):
         for j in range(MODE_NUMBER):
             Y3D[i // 2][j][i % 2] = Y2D[i][j]
+
+    print(id)
            

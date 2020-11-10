@@ -1,6 +1,6 @@
 '''
 Example usage (from parent directory):
-'python -m learning_to_simulate.pca_svd_tf_test'
+'python -m pca.test_pca_svd_tf'
 
 Refs:
 https://en.wikipedia.org/wiki/Principal_component_analysis

@@ -1,7 +1,4 @@
 '''
-Example usage (from parent directory):
-`python -m learning_to_simulate.pca --data_path={DATA_PATH}`
-
 Refs:
 https://en.wikipedia.org/wiki/Principal_component_analysis
 https://towardsdatascience.com/svd-in-machine-learning-pca-f25cf9b837ae
@@ -38,4 +35,4 @@ def pca_evd_np(X2D, mode_number):
     # Compute subspace 2D data
     Y2D = np.matmul(X2D, W)
 
-    return W, Y2D
+    return idx, W, Y2D

@@ -1,6 +1,6 @@
 '''
 Example usage (from parent directory):
-'python -m learning_to_simulate.pca_evd_np_test'
+'python -m pca.test_pca_evd_np'
 
 Refs:
 https://en.wikipedia.org/wiki/Principal_component_analysis
@@ -47,7 +47,7 @@ def pca_evd_np(X2D, mode_number):
     # Compute subspace 2D data
     Y2D = np.matmul(X2D, W)
 
-    return W, Y2D
+    return idx, W, Y2D
 
 
 def plot(X, Y, no):
@@ -119,8 +119,9 @@ if __name__ == '__main__':
                 X2D[2*i+k][j] = X3D[i][j][k]
     print(X2D)
 
-    W, Y2D = pca_evd_np(X2D, MODE_NUMBER)
+    id, W, Y2D = pca_evd_np(X2D, MODE_NUMBER)
     print(Y2D)
+    print(id[0])  # most effective particle
 
     Y3D = np.zeros((timestep_number, MODE_NUMBER, dim_number))
     for i in range(2*timestep_number):
