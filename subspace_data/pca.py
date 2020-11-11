@@ -2,6 +2,7 @@
 Refs:
 https://en.wikipedia.org/wiki/Principal_component_analysis
 https://towardsdatascience.com/svd-in-machine-learning-pca-f25cf9b837ae
+https://towardsdatascience.com/pca-and-svd-explained-with-numpy-5d13b0d2a4d8
 
 '''
 

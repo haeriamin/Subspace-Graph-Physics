@@ -112,21 +112,57 @@ if __name__ == '__main__':
     dim_number = len(X3D[0][0])
     # print(dim_number)
 
-    X2D = np.zeros((2*timestep_number, particle_number))
+    # Convert 3D data to 2D data
+    X2D = np.zeros((dim_number*timestep_number, particle_number))
     for i in range(timestep_number):
         for j in range(particle_number):
             for k in range(dim_number):
-                X2D[2*i+k][j] = X3D[i][j][k]
-    print(X2D)
+                X2D[dim_number*i+k][j] = X3D[i][j][k]
+    # print(X2D)
 
-    id, W, Y2D = pca_evd_np(X2D, MODE_NUMBER)
-    print(Y2D)
-    print(id[0])  # most effective particle
+    idx, W, Y2D = pca_evd_np(X2D, MODE_NUMBER)
+    # print(Y2D)
 
+    # Convert 2D data to 3D data
     Y3D = np.zeros((timestep_number, MODE_NUMBER, dim_number))
-    for i in range(2*timestep_number):
+    for i in range(dim_number*timestep_number):
         for j in range(MODE_NUMBER):
             Y3D[i // 2][j][i % 2] = Y2D[i][j]
     # print(Y3D)
 
-    plot(X2D, Y2D, 2*timestep_number)
+    # Convert 3D data to 1D data
+    l = 0
+    Y1D = np.zeros((timestep_number*MODE_NUMBER*dim_number))
+    for i in range(timestep_number):
+        for j in range(MODE_NUMBER):
+            for k in range(dim_number):
+                Y1D[l] = Y3D[i][j][k]
+                l += 1
+    # print(Y1D)
+
+    # Convert 3D data to 2D data
+    Y2D_2 = np.zeros((timestep_number, MODE_NUMBER*dim_number))
+    for i in range(timestep_number):
+        for j in range(MODE_NUMBER):
+            for k in range(dim_number):
+                Y2D_2[i][dim_number*j+k] = Y3D[i][j][k]
+    print(Y2D_2)
+
+    # plot(X2D, Y2D, 2*timestep_number)
+
+    ## Test1:
+    # G = [1, 2, 10, 20, 100, 200, 3, 4, 30, 40, 300, 400, 5, 6, 50, 60, 500, 600]
+    # position_shape = [3, -1, 2]
+    # parsed_features = np.reshape(G, position_shape)
+    # print(parsed_features)
+
+    ## Test2:
+    import struct
+    print(struct.pack('q', 6))
+    print(struct.pack('d', 612.1312211))
+    a = [612.1312211, 612.1312211]
+    bufa = struct.pack('%sd' % len(a), *a)
+    print(bufa)
+    b = [6, 6]
+    bufb = struct.pack('%sq' % len(b), *b)
+    print(bufb)
