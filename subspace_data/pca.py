@@ -36,4 +36,10 @@ def evd_np(X2D, mode_number):
     # Compute subspace 2D data
     Y2D = np.matmul(X2D, W)
 
-    return idx, W, Y2D
+    # return idx, W, Y2D
+
+    # Instead of returning mapped data, return actual data while reduced
+    X2D = X2D[:, idx]
+    X2D_new = X2D[:, :mode_number]
+
+    return idx, W, X2D_new

@@ -8,9 +8,7 @@ https://docs.python.org/3/library/struct.html
 
 import numpy as np
 import struct
-import pickle
-# import warnings
-# warnings.filterwarnings("ignore")
+# import pickle
 
 from subspace_data import tfrecord
 from subspace_data import pca
@@ -30,7 +28,7 @@ if __name__ == '__main__':
     print('# of particles:', particle_number)
     dim_number = len(X3D[0][0])
     print('# of dimensions:', dim_number)
-    print()
+    # print(X3D[0])
 
     ''' Process data '''
     MODE_NUMBER = 256
@@ -45,10 +43,10 @@ if __name__ == '__main__':
     # Apply PCA to 2D data
     idx, W, Y2D = pca.evd_np(X2D, MODE_NUMBER)
 
-    # Save PCA transformation matrix, W
-    data_path = './learning_to_simulate/datasets/' + dataset_name
-    with open(data_path + '/' + dataset_split + '_pca_mat.pkl', 'wb') as f:
-        pickle.dump(W, f)
+    # # Save PCA transformation matrix, W
+    # data_path = './learning_to_simulate/datasets/' + dataset_name
+    # with open(data_path + '/' + dataset_split + '_pca_mat.pkl', 'wb') as f:
+    #     pickle.dump(W, f)
 
     # Convert 2D data to 3D data
     Y3D = np.zeros((timestep_number, MODE_NUMBER, dim_number))

@@ -20,6 +20,7 @@ import functools
 import numpy as np
 import tensorflow.compat.v1 as tf
 
+
 # Create a description of the features.
 _FEATURE_DESCRIPTION = {
     'position': tf.io.VarLenFeature(tf.string),
@@ -78,6 +79,10 @@ def parse_serialized_simulation_example(example_proto, metadata):
       example_proto,
       context_features=_CONTEXT_FEATURES,
       sequence_features=feature_description)
+
+  # t1 = context['particle_type']
+  # t2 = parsed_features['position']
+
   for feature_key, item in parsed_features.items():
     convert_fn = functools.partial(
         convert_to_tensor, encoded_dtype=_FEATURE_DTYPES[feature_key]['in'])
@@ -99,12 +104,13 @@ def parse_serialized_simulation_example(example_proto, metadata):
         parsed_features['step_context'],
         [sequence_length, context_feat_len])
   # Decode particle type explicitly
+  # t = context['particle_type']
   context['particle_type'] = tf.py_function(
       functools.partial(convert_fn, encoded_dtype=np.int64),
       inp=[context['particle_type'].values],
       Tout=[tf.int64])
   context['particle_type'] = tf.reshape(context['particle_type'], [-1])
-  return context, parsed_features
+  return context, parsed_features  # , t1, t2
 
 
 def split_trajectory(context, features, window_length=7):
