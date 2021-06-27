@@ -16,7 +16,7 @@ This is a computationally efficient version of "Learning To Simulate" developed 
 
 * The rollout runtime is 5 micro-sec/sec, and the training runtime is 40 global-step/sec (on NVIDIA RTX 3080).
 
-* The particle positions and velocities, and rigid body interaction forces, in a 3D excavation configuration, are compared above.
+* The particle positions and velocities, and rigid body interaction forces are compared above.
 
 <!-- ## Code structure
 
