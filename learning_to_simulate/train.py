@@ -62,8 +62,8 @@ flags.DEFINE_string('model_path', None,
 flags.DEFINE_string('output_path', None,
                     help='The path for saving outputs (e.g. rollouts).')
 # added
-flags.DEFINE_enum('space', None, ['sub'],
-  help=('Use either fullspace or subspace data (reduced via PCA).'))
+flags.DEFINE_enum('option', None, [''],
+  help=('Use either the new implemented options.'))
 
 
 FLAGS = flags.FLAGS
@@ -105,7 +105,6 @@ def prepare_inputs(tensor_dict):
   # Position is encoded as [sequence_length, num_particles, dim] but the model
   # expects [num_particles, sequence_length, dim].
   pos = tensor_dict['position']
-  # print(pos[1])
   pos = tf.transpose(pos, perm=[1, 0, 2])
 
   # The target position is the final step of the stack of positions.
@@ -171,8 +170,7 @@ def batch_concat(dataset, batch_size):
   return windowed_ds.map(
       lambda *x: tree.map_structure(reduce_window, initial_state, x))
 
-# def get_input_fn(data_path, batch_size, mode, split):  # removed
-def get_input_fn(data_path, batch_size, mode, split, space=''):  # added
+def get_input_fn(data_path, batch_size, mode, split):
   """Gets the learning simulation input function for tf.estimator.Estimator.
 
   Args:
@@ -193,11 +191,7 @@ def get_input_fn(data_path, batch_size, mode, split, space=''):  # added
     metadata = _read_metadata(data_path)
 
     # Create a tf.data.Dataset from the TFRecord.
-    # removed
-    # ds = tf.data.TFRecordDataset([os.path.join(data_path, f'{split}.tfrecord')])
-    # added
-    ds = tf.data.TFRecordDataset([os.path.join(
-      data_path, f'{split+space}.tfrecord')])
+    ds = tf.data.TFRecordDataset([os.path.join(data_path, f'{split}.tfrecord')])
     ds = ds.map(functools.partial(
         reading_utils.parse_serialized_simulation_example, metadata=metadata))
 
@@ -448,12 +442,6 @@ def _read_metadata(data_path):
 def main(_):
   """Train or evaluates the model."""
 
-  # added
-  if FLAGS.space == 'sub':
-    space = '_' + FLAGS.space
-  else:
-    space = ''
-
   if FLAGS.mode in ['train', 'eval']:
     estimator = tf.estimator.Estimator(
         get_one_step_estimator_fn(FLAGS.data_path, FLAGS.noise_std),
@@ -462,8 +450,7 @@ def main(_):
       # Train all the way through.
       estimator.train(
           input_fn=get_input_fn(FLAGS.data_path, FLAGS.batch_size,
-            # mode='one_step_train', split='train'),  # removed
-            mode='one_step_train', split='train', space=space),  # added
+            mode='one_step_train', split='train'),
           max_steps=FLAGS.num_steps)
     else:
       # One-step evaluation from checkpoint.
@@ -483,7 +470,7 @@ def main(_):
     metadata = _read_metadata(FLAGS.data_path)
     rollout_iterator = rollout_estimator.predict(
         input_fn=get_input_fn(FLAGS.data_path, batch_size=1,
-                              mode='rollout', split=FLAGS.eval_split, space=space))
+                              mode='rollout', split=FLAGS.eval_split))
 
     for example_index, example_rollout in enumerate(rollout_iterator):
       example_rollout['metadata'] = metadata

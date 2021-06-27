@@ -30,8 +30,17 @@ _FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT = _FEATURE_DESCRIPTION.copy()
 _FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT['step_context'] = tf.io.VarLenFeature(
     tf.string)
 
+# added:
+_FEATURE_DESCRIPTION_WITH_FORCE = _FEATURE_DESCRIPTION.copy()
+_FEATURE_DESCRIPTION_WITH_FORCE['force'] = tf.io.VarLenFeature(tf.string)
+
 _FEATURE_DTYPES = {
     'position': {
+        'in': np.float32,
+        'out': tf.float32
+    },
+    # added:
+    'force': {
         'in': np.float32,
         'out': tf.float32
     },
@@ -71,10 +80,15 @@ def parse_serialized_simulation_example(example_proto, metadata):
       across time, where axis zero is the time axis.
 
   """
+
   if 'context_mean' in metadata:
     feature_description = _FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT
+  # added:
+  elif 'rigid_body_force_mean' in metadata:
+    feature_description = _FEATURE_DESCRIPTION_WITH_FORCE
   else:
     feature_description = _FEATURE_DESCRIPTION
+
   context, parsed_features = tf.io.parse_single_sequence_example(
       example_proto,
       context_features=_CONTEXT_FEATURES,
@@ -87,29 +101,39 @@ def parse_serialized_simulation_example(example_proto, metadata):
     convert_fn = functools.partial(
         convert_to_tensor, encoded_dtype=_FEATURE_DTYPES[feature_key]['in'])
     parsed_features[feature_key] = tf.py_function(
-        convert_fn, inp=[item.values], Tout=_FEATURE_DTYPES[feature_key]['out'])
+        convert_fn, inp=[item.values], Tout=_FEATURE_DTYPES[feature_key]['out']
+        )
 
   # There is an extra frame at the beginning so we can calculate pos change
   # for all frames used in the paper.
   position_shape = [metadata['sequence_length'] + 1, -1, metadata['dim']]
 
-  # Reshape positions to correct dim:
+
+  # Reshape positions to correct dim.
   parsed_features['position'] = tf.reshape(parsed_features['position'],
                                            position_shape)
+
+  # added:
+  if 'rigid_body_force_mean' in metadata:
+    force_shape = [metadata['sequence_length'] + 1, metadata['dim']]                                     
+    parsed_features['force'] = tf.reshape(parsed_features['force'], force_shape)
+
   # Set correct shapes of the remaining tensors.
   sequence_length = metadata['sequence_length'] + 1
+
   if 'context_mean' in metadata:
     context_feat_len = len(metadata['context_mean'])
     parsed_features['step_context'] = tf.reshape(
         parsed_features['step_context'],
         [sequence_length, context_feat_len])
+
   # Decode particle type explicitly
-  # t = context['particle_type']
   context['particle_type'] = tf.py_function(
       functools.partial(convert_fn, encoded_dtype=np.int64),
       inp=[context['particle_type'].values],
       Tout=[tf.int64])
   context['particle_type'] = tf.reshape(context['particle_type'], [-1])
+
   return context, parsed_features  # , t1, t2
 
 
@@ -138,9 +162,20 @@ def split_trajectory(context, features, window_length=7):
     model_input_features['step_context'] = tf.stack(global_stack)
 
   pos_stack = []
+  force_stack = []  # added
+
   for idx in range(input_trajectory_length):
     pos_stack.append(features['position'][idx:idx + window_length])
+    
+    # added:
+    if 'force' in features:
+      force_stack.append(features['force'][idx:idx + window_length])
+  
   # Get the corresponding positions
   model_input_features['position'] = tf.stack(pos_stack)
+
+  # added:
+  if 'force' in features:
+    model_input_features['force'] = tf.stack(force_stack)
 
   return tf.data.Dataset.from_tensor_slices(model_input_features)
