@@ -1,7 +1,7 @@
 # Subspace Graph Physics: <br /> Real-Time Rigid Body-Driven Granular Flow Simulation
 #### [[Paper](https://ieeexplore.ieee.org/abstract/document/9438132)]
 
-This is a <strong>computationally efficient</strong> version of "Learning To Simulate" developed by [DeepMind](https://deepmind.com/research/publications/Learning-to-Simulate-Complex-Physics-with-Graph-Networks) and [Stanford](https://cs.stanford.edu/people/jure) researchers, for real-time physics simulation, specially granular flows and their interactions with rigid bodies. The approach is developed under the supervision of [Prof. K. Skonieczny (Concordia)](http://users.encs.concordia.ca/~kskoniec/).
+This is a <strong>computationally efficient</strong> version of "Learning To Simulate" developed by [DeepMind](https://deepmind.com/research/publications/Learning-to-Simulate-Complex-Physics-with-Graph-Networks) and [Stanford](https://cs.stanford.edu/people/jure) researchers, for <strong>real-time 3D</strong> physics simulations, specially granular flows and their interactions with rigid bodies. The approach is developed under the supervision of [Prof. K. Skonieczny (Concordia)](http://users.encs.concordia.ca/~kskoniec/).
 
 <img src="https://github.com/haeriamin/files/blob/master/excav_ml_4.gif" alt="drawing" width="820">
 
