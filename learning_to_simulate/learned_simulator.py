@@ -37,7 +37,6 @@ STD_EPSILON = 1e-8
 
 class LearnedSimulator(snt.AbstractModule):
   """Learned simulator from https://arxiv.org/pdf/2002.09405.pdf."""
-
   def __init__(
       self,
       num_dimensions,
@@ -47,6 +46,7 @@ class LearnedSimulator(snt.AbstractModule):
       normalization_stats,
       num_particle_types,
       particle_type_embedding_size,
+      rigid_body_ref_point=None,  # added
       name="LearnedSimulator"):
     """Inits the model.
 
@@ -67,20 +67,22 @@ class LearnedSimulator(snt.AbstractModule):
 
     """
     super().__init__(name=name)
-
+    self.rigid_body_ref_point = rigid_body_ref_point  # added
     self._connectivity_radius = connectivity_radius
     self._num_particle_types = num_particle_types
     self._boundaries = boundaries
     self._normalization_stats = normalization_stats
     with self._enter_variable_scope():
       self._graph_network = graph_network.EncodeProcessDecode(
-          output_size=num_dimensions, **graph_network_kwargs)
+          # output_size=num_dimensions, **graph_network_kwargs)  # removed
+          output_size=2*num_dimensions, **graph_network_kwargs)  # added
 
       if self._num_particle_types > 1:
         self._particle_type_embedding = tf.get_variable(
             "particle_embedding",
             [self._num_particle_types, particle_type_embedding_size],
             trainable=True, use_resource=True)
+
 
   def _build(self, position_sequence, n_particles_per_example,
              global_context=None, particle_types=None):
@@ -105,12 +107,16 @@ class LearnedSimulator(snt.AbstractModule):
         position_sequence, n_particles_per_example, global_context,
         particle_types)
 
-    normalized_acceleration = self._graph_network(input_graphs_tuple)
+    # normalized_acceleration = self._graph_network(input_graphs_tuple)  # removed
+    normalized_acceleration_force = self._graph_network(input_graphs_tuple)  # added
 
-    next_position = self._decoder_postprocessor(
-        normalized_acceleration, position_sequence)
+    # next_position = self._decoder_postprocessor(  # removed
+    next_position, next_force = self._decoder_postprocessor(  # added
+        normalized_acceleration_force, position_sequence)
 
-    return next_position
+    # return next_position  # removed
+    return next_position, next_force  # added
+
 
   def _encoder_preprocessor(
       self, position_sequence, n_node, global_context, particle_types):
@@ -126,7 +132,7 @@ class LearnedSimulator(snt.AbstractModule):
     # Collect node features.
     node_features = []
 
-    # Normalized velocity sequence, merging spatial an time axis.
+    # Normalized velocity sequence, merging spatial on time axis.
     velocity_stats = self._normalization_stats["velocity"]
     normalized_velocity_sequence = (
         velocity_sequence - velocity_stats.mean) / velocity_stats.std
@@ -135,19 +141,27 @@ class LearnedSimulator(snt.AbstractModule):
         normalized_velocity_sequence)
     node_features.append(flat_velocity_sequence)
 
-    # Normalized clipped distances to lower and upper boundaries.
-    # boundaries are an array of shape [num_dimensions, 2], where the second
-    # axis, provides the lower/upper boundaries.
-    boundaries = tf.constant(self._boundaries, dtype=tf.float32)
-    distance_to_lower_boundary = (
-        most_recent_position - tf.expand_dims(boundaries[:, 0], 0))
-    distance_to_upper_boundary = (
-        tf.expand_dims(boundaries[:, 1], 0) - most_recent_position)
-    distance_to_boundaries = tf.concat(
-        [distance_to_lower_boundary, distance_to_upper_boundary], axis=1)
-    normalized_clipped_distance_to_boundaries = tf.clip_by_value(
-        distance_to_boundaries / self._connectivity_radius, -1., 1.)
-    node_features.append(normalized_clipped_distance_to_boundaries)
+    # removed:
+    # # Normalized clipped distances to lower and upper boundaries.
+    # # boundaries are an array of shape [num_dimensions, 2], where the second
+    # # axis, provides the lower/upper boundaries.
+    # boundaries = tf.constant(self._boundaries, dtype=tf.float32)
+    # distance_to_lower_boundary = (
+    #     most_recent_position - tf.expand_dims(boundaries[:, 0], 0))
+    # distance_to_upper_boundary = (
+    #     tf.expand_dims(boundaries[:, 1], 0) - most_recent_position)
+    # distance_to_boundaries = tf.concat(
+    #     [distance_to_lower_boundary, distance_to_upper_boundary], axis=1)
+    # normalized_clipped_distance_to_boundaries = tf.clip_by_value(
+    #     distance_to_boundaries / self._connectivity_radius, -1., 1.)
+    # node_features.append(normalized_clipped_distance_to_boundaries)
+
+    # added: Distance to a rigid body reference point
+    # distance_to_rigidbody = (
+    #     most_recent_position - tf.expand_dims(most_recent_position[int(rigid_body_ref_point)], 0))
+    # # normalized_clipped_distance_to_rigidbody = tf.clip_by_value(
+    # #     distance_to_rigidbody / (0.457/2), -1., 1.)
+    # node_features.append(distance_to_rigidbody)
 
     # Particle type.
     if self._num_particle_types > 1:
@@ -186,14 +200,23 @@ class LearnedSimulator(snt.AbstractModule):
         receivers=receivers,
         )
 
-  def _decoder_postprocessor(self, normalized_acceleration, position_sequence):
+
+  # def _decoder_postprocessor(self, normalized_acceleration, position_sequence):  # removed
+  def _decoder_postprocessor(self, normalized_acceleration_force, position_sequence):  # added
 
     # The model produces the output in normalized space so we apply inverse
     # normalization.
     acceleration_stats = self._normalization_stats["acceleration"]
     acceleration = (
-        normalized_acceleration * acceleration_stats.std
+        # normalized_acceleration * acceleration_stats.std  # removed
+        normalized_acceleration_force[:, :3] * acceleration_stats.std  # added
         ) + acceleration_stats.mean
+
+    # added:
+    force_stats = self._normalization_stats["force"]
+    new_force = (
+        normalized_acceleration_force[:, 3:] * force_stats.std  # added
+        ) + force_stats.mean
 
     # Use an Euler integrator to go from acceleration to position, assuming
     # a dt=1 corresponding to the size of the finite difference.
@@ -202,10 +225,13 @@ class LearnedSimulator(snt.AbstractModule):
 
     new_velocity = most_recent_velocity + acceleration  # * dt = 1
     new_position = most_recent_position + new_velocity  # * dt = 1
-    return new_position
+    # return new_position  # removed
+    return new_position, new_force  # added
+
 
   def get_predicted_and_target_normalized_accelerations(
       self, next_position, position_sequence_noise, position_sequence,
+      next_force,  # added
       n_particles_per_example, global_context=None, particle_types=None):  # pylint: disable=g-doc-args
     """Produces a model step, outputting the next position for each particle.
 
@@ -229,13 +255,21 @@ class LearnedSimulator(snt.AbstractModule):
     input_graphs_tuple = self._encoder_preprocessor(
         noisy_position_sequence, n_particles_per_example, global_context,
         particle_types)
-    predicted_normalized_acceleration = self._graph_network(input_graphs_tuple)
+    # predicted_normalized_acceleration = self._graph_network(input_graphs_tuple)  # removed
+    predicted_normalized_acceleration_force = self._graph_network(input_graphs_tuple)  # added
 
     # Calculate the target acceleration, using an `adjusted_next_position `that
     # is shifted by the noise in the last input position.
     next_position_adjusted = next_position + position_sequence_noise[:, -1]
+
     target_normalized_acceleration = self._inverse_decoder_postprocessor(
         next_position_adjusted, noisy_position_sequence)
+
+    # added:
+    force_stats = self._normalization_stats["force"]
+    target_normalized_force = (
+        next_force - force_stats.mean) / force_stats.std
+
     # As a result the inverted Euler update in the `_inverse_decoder` produces:
     # * A target acceleration that does not explicitly correct for the noise in
     #   the input positions, as the `next_position_adjusted` is different
@@ -245,7 +279,9 @@ class LearnedSimulator(snt.AbstractModule):
     #   as `next_position_adjusted - noisy_position_sequence[:,-1]`
     #   matches the ground truth next velocity (noise cancels out).
 
-    return predicted_normalized_acceleration, target_normalized_acceleration
+    # return predicted_normalized_acceleration, target_normalized_acceleration
+    return predicted_normalized_acceleration_force[:, :3], predicted_normalized_acceleration_force[:, 3:], target_normalized_acceleration, target_normalized_force
+
 
   def _inverse_decoder_postprocessor(self, next_position, position_sequence):
     """Inverse of `_decoder_postprocessor`."""
@@ -258,9 +294,9 @@ class LearnedSimulator(snt.AbstractModule):
     acceleration_stats = self._normalization_stats["acceleration"]
     normalized_acceleration = (
         acceleration - acceleration_stats.mean) / acceleration_stats.std
+
     return normalized_acceleration
 
 
 def time_diff(input_sequence):
   return input_sequence[:, 1:] - input_sequence[:, :-1]
-

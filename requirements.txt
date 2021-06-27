@@ -34,7 +34,7 @@ semantic-version==2.8.5
 six==1.15.0
 sklearn==0.0
 tensorboard==1.15.0
-tensorflow-gpu==1.15
+tensorflow==1.15.4
 tensorflow-estimator==1.15.1
 tensorflow-probability==0.8.0
 termcolor==1.1.0
@@ -42,3 +42,4 @@ threadpoolctl==2.1.0
 Werkzeug==1.0.1
 wrapt==1.12.1
 zipp==3.3.1
+ffmpeg-python

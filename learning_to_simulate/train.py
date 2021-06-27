@@ -26,7 +26,6 @@ Evaluate model from checkpoint (from parent directory):
 Produce rollouts (from parent directory):
 `python -m learning_to_simulate.train --data_path={DATA_PATH} --model_path={MODEL_PATH} --output_path={OUTPUT_PATH} --mode=eval_rollout`
 
-
 """
 # pylint: enable=line-too-long
 import collections
@@ -34,6 +33,8 @@ import functools
 import json
 import os
 import pickle
+# import re  # added
+import timeit  # added
 
 from absl import app
 from absl import flags
@@ -61,10 +62,10 @@ flags.DEFINE_string('model_path', None,
                           'Defaults to a temporary directory.'))
 flags.DEFINE_string('output_path', None,
                     help='The path for saving outputs (e.g. rollouts).')
-# added
-flags.DEFINE_enum('option', None, [''],
-  help=('Use either the new implemented options.'))
-
+# added:
+# flags.DEFINE_float('con_radius', 0.025, help=('The connectivity radius.'))
+# flags.DEFINE_integer('gpu', int(0), help='Visible GPU.')
+flags.DEFINE_integer('mssg', int(10), help='Number of message passing steps.')
 
 FLAGS = flags.FLAGS
 
@@ -73,7 +74,7 @@ Stats = collections.namedtuple('Stats', ['mean', 'std'])
 INPUT_SEQUENCE_LENGTH = 6  # So we can calculate the last 5 velocities.
 NUM_PARTICLE_TYPES = 9
 KINEMATIC_PARTICLE_ID = 3
-
+FORCE = True  # added
 
 def get_kinematic_mask(particle_types):
   """Returns a boolean mask, set to true for kinematic (obstacle) particles."""
@@ -106,9 +107,15 @@ def prepare_inputs(tensor_dict):
   # expects [num_particles, sequence_length, dim].
   pos = tensor_dict['position']
   pos = tf.transpose(pos, perm=[1, 0, 2])
-
   # The target position is the final step of the stack of positions.
   target_position = pos[:, -1]
+
+  # added:
+  force = tensor_dict['force']
+  force = tf.transpose(force, perm=[1, 0])
+  target_force = tf.expand_dims(force[:, -1], 0)
+  target_position_force = tf.concat([target_position, target_force], 0) 
+  tensor_dict["force"] = force[:, :-1]
 
   # Remove the target from the input.
   tensor_dict['position'] = pos[:, :-1]
@@ -125,17 +132,26 @@ def prepare_inputs(tensor_dict):
     tensor_dict['step_context'] = tensor_dict['step_context'][-2]
     # Add an extra dimension for stacking via concat.
     tensor_dict['step_context'] = tensor_dict['step_context'][tf.newaxis]
-  return tensor_dict, target_position
+  
+  # return tensor_dict, target_position  # removed
+  return tensor_dict, target_position_force  # added
 
 
 def prepare_rollout_inputs(context, features):
-  """Prepares an inputs trajectory for rollout."""
+  """Prepares an input trajectory for rollout."""
   out_dict = {**context}
   # Position is encoded as [sequence_length, num_particles, dim] but the model
   # expects [num_particles, sequence_length, dim].
   pos = tf.transpose(features['position'], [1, 0, 2])
   # The target position is the final step of the stack of positions.
   target_position = pos[:, -1]
+  
+  # added:
+  force = tf.transpose(features['force'], perm=[1, 0])
+  target_force = tf.expand_dims(force[:, -1], 0)
+  target_position_force = tf.concat([target_position, target_force], 0) 
+  out_dict['force'] = force[:, :-1]
+
   # Remove the target from the input.
   out_dict['position'] = pos[:, :-1]
   # Compute the number of nodes
@@ -143,7 +159,9 @@ def prepare_rollout_inputs(context, features):
   if 'step_context' in features:
     out_dict['step_context'] = features['step_context']
   out_dict['is_trajectory'] = tf.constant([True], tf.bool)
-  return out_dict, target_position
+  
+  # return out_dict, target_position  # removed
+  return out_dict, target_position_force  # added
 
 
 def batch_concat(dataset, batch_size):
@@ -170,9 +188,9 @@ def batch_concat(dataset, batch_size):
   return windowed_ds.map(
       lambda *x: tree.map_structure(reduce_window, initial_state, x))
 
+
 def get_input_fn(data_path, batch_size, mode, split):
   """Gets the learning simulation input function for tf.estimator.Estimator.
-
   Args:
     data_path: the path to the dataset directory.
     batch_size: the number of graphs in a batch.
@@ -183,7 +201,6 @@ def get_input_fn(data_path, batch_size, mode, split):
     The input function for the learning simulation model.
   """
 
-
   def input_fn():
     """Input function for learning simulation."""
 
@@ -193,14 +210,16 @@ def get_input_fn(data_path, batch_size, mode, split):
     # Create a tf.data.Dataset from the TFRecord.
     ds = tf.data.TFRecordDataset([os.path.join(data_path, f'{split}.tfrecord')])
     ds = ds.map(functools.partial(
-        reading_utils.parse_serialized_simulation_example, metadata=metadata))
+        # reading_utils.parse_serialized_simulation_example, metadata=metadata))  # removed
+        reading_utils.parse_serialized_simulation_example, metadata=metadata, FORCE=FORCE))  # added
 
     if mode.startswith('one_step'):
       # Splits an entire trajectory into chunks of 7 steps.
       # Previous 5 velocities, current velocity and target.
       split_with_window = functools.partial(
           reading_utils.split_trajectory,
-          window_length=INPUT_SEQUENCE_LENGTH + 1)
+          window_length=INPUT_SEQUENCE_LENGTH + 1,
+          FORCE=FORCE)  # added
       ds = ds.flat_map(split_with_window)
 
       # Splits a chunk into input steps and target steps
@@ -230,8 +249,13 @@ def rollout(simulator, features, num_steps):
   """Rolls out a trajectory by applying the model in sequence."""
   initial_positions = features['position'][:, 0:INPUT_SEQUENCE_LENGTH]
   ground_truth_positions = features['position'][:, INPUT_SEQUENCE_LENGTH:]
+  
+  # added:
+  initial_forces = features['force'][:, 0:INPUT_SEQUENCE_LENGTH]
+  ground_truth_forces = features['force'][:, INPUT_SEQUENCE_LENGTH:]
+
   global_context = features.get('step_context')
-  def step_fn(step, current_positions, predictions):
+  def step_fn(step, current_positions, predictions, predictions_force):  # ...added
 
     if global_context is None:
       global_context_step = None
@@ -239,7 +263,8 @@ def rollout(simulator, features, num_steps):
       global_context_step = global_context[
           step + INPUT_SEQUENCE_LENGTH - 1][tf.newaxis]
 
-    next_position = simulator(
+    # next_position = simulator(  # removed
+    next_position, next_force = simulator(  # added
         current_positions,
         n_particles_per_example=features['n_particles_per_example'],
         particle_types=features['particle_type'],
@@ -252,18 +277,23 @@ def rollout(simulator, features, num_steps):
                              next_position)
     updated_predictions = predictions.write(step, next_position)
 
+    # added:
+    next_force = tf.reduce_mean(next_force, 0)
+    updated_predictions_force = predictions_force.write(step, next_force)
+
     # Shift `current_positions`, removing the oldest position in the sequence
     # and appending the next position at the end.
     next_positions = tf.concat([current_positions[:, 1:],
                                 next_position[:, tf.newaxis]], axis=1)
 
-    return (step + 1, next_positions, updated_predictions)
+    return (step + 1, next_positions, updated_predictions, updated_predictions_force)  # ...added
 
   predictions = tf.TensorArray(size=num_steps, dtype=tf.float32)
-  _, _, predictions = tf.while_loop(
-      cond=lambda step, state, prediction: tf.less(step, num_steps),
+  predictions_force = tf.TensorArray(size=num_steps, dtype=tf.float32)  # added
+  _, _, predictions, predictions_force = tf.while_loop(  # ...added
+      cond=lambda step, state, prediction, predictions_force: tf.less(step, num_steps),  # ...added
       body=step_fn,
-      loop_vars=(0, initial_positions, predictions),
+      loop_vars=(0, initial_positions, predictions, predictions_force),  # ...added
       back_prop=False,
       parallel_iterations=1)
 
@@ -272,6 +302,10 @@ def rollout(simulator, features, num_steps):
       'predicted_rollout': predictions.stack(),
       'ground_truth_rollout': tf.transpose(ground_truth_positions, [1, 0, 2]),
       'particle_types': features['particle_type'],
+      # added:
+      'initial_forces': tf.transpose(initial_forces, [1, 0]),  
+      'predicted_forces': predictions_force.stack(),
+      'ground_truth_forces': tf.transpose(ground_truth_forces, [1, 0]),
   }
 
   if global_context is not None:
@@ -287,14 +321,23 @@ def _get_simulator(model_kwargs, metadata, acc_noise_std, vel_noise_std):
   """Instantiates the simulator."""
   # Cast statistics to numpy so they are arrays when entering the model.
   cast = lambda v: np.array(v, dtype=np.float32)
+
   acceleration_stats = Stats(
       cast(metadata['acc_mean']),
       _combine_std(cast(metadata['acc_std']), acc_noise_std))
   velocity_stats = Stats(
       cast(metadata['vel_mean']),
       _combine_std(cast(metadata['vel_std']), vel_noise_std))
+
+  # added:
+  force_stats = Stats(
+      cast(metadata['rigid_body_force_mean']),
+      _combine_std(cast(metadata['rigid_body_force_std']), vel_noise_std))
+
   normalization_stats = {'acceleration': acceleration_stats,
-                         'velocity': velocity_stats}
+                         'velocity': velocity_stats,
+                         'force': force_stats}  # added
+
   if 'context_mean' in metadata:
     context_stats = Stats(
         cast(metadata['context_mean']), cast(metadata['context_std']))
@@ -307,16 +350,17 @@ def _get_simulator(model_kwargs, metadata, acc_noise_std, vel_noise_std):
       boundaries=metadata['bounds'],
       num_particle_types=NUM_PARTICLE_TYPES,
       normalization_stats=normalization_stats,
-      particle_type_embedding_size=16)
+      particle_type_embedding_size=16,
+      rigid_body_ref_point=metadata['rigid_body_ref_point'])  # added
   return simulator
 
 
 def get_one_step_estimator_fn(data_path,
                               noise_std,
+                              message_passing_steps,
                               latent_size=128,
                               hidden_size=128,
-                              hidden_layers=2,
-                              message_passing_steps=10):
+                              hidden_layers=2):
   """Gets one step model for training simulation."""
   metadata = _read_metadata(data_path)
 
@@ -327,7 +371,19 @@ def get_one_step_estimator_fn(data_path,
       num_message_passing_steps=message_passing_steps)
 
   def estimator_fn(features, labels, mode):
-    target_next_position = labels
+    # target_next_position = labels  # removed
+
+    # added: If batch size is 1:
+    # target_next_position = labels[:-1]
+    # target_next_force = labels[-1]
+    # added: If batch size is 2:
+    target_next_position1 = labels[:features['n_particles_per_example'][0]]
+    target_next_force1 = tf.expand_dims(labels[features['n_particles_per_example'][0]], 0)
+    target_next_position2 = labels[features['n_particles_per_example'][0]+1:-1]
+    target_next_force2 = tf.expand_dims(labels[-1], 0)
+    target_next_position = tf.concat([target_next_position1, target_next_position2], 0)
+    target_next_force = tf.concat([target_next_force1, target_next_force2], 0)
+
     simulator = _get_simulator(model_kwargs, metadata,
                                vel_noise_std=noise_std,
                                acc_noise_std=noise_std)
@@ -345,18 +401,32 @@ def get_one_step_estimator_fn(data_path,
         next_position=target_next_position,
         position_sequence=features['position'],
         position_sequence_noise=sampled_noise,
+        next_force=target_next_force,  # added
         n_particles_per_example=features['n_particles_per_example'],
         particle_types=features['particle_type'],
         global_context=features.get('step_context'))
-    pred_acceleration, target_acceleration = pred_target
-
-    # Calculate the loss and mask out loss on kinematic particles/
-    loss = (pred_acceleration - target_acceleration)**2
-
+    pred_acceleration, pred_force, target_acceleration, target_force = pred_target
+  
+    # Calculate the loss and mask out loss on kinematic particles
     num_non_kinematic = tf.reduce_sum(
         tf.cast(non_kinematic_mask, tf.float32))
-    loss = tf.where(non_kinematic_mask, loss, tf.zeros_like(loss))
-    loss = tf.reduce_sum(loss) / tf.reduce_sum(num_non_kinematic)
+
+    # ...added:
+    loss1 = (pred_acceleration - target_acceleration)**2
+    loss1 = tf.where(non_kinematic_mask, loss1, tf.zeros_like(loss1))
+    loss1 = tf.reduce_sum(loss1) / tf.reduce_sum(num_non_kinematic)
+
+    # added: If batch size is 1:
+    # loss2 = (tf.reduce_mean(pred_force, 0) - target_force)**2  
+    # loss2 = tf.reduce_mean(loss2)
+    # added: If batch size is 2:
+    pred_force1 = tf.expand_dims(tf.reduce_mean(pred_force[:features['n_particles_per_example'][0]], 0), 0)
+    pred_force2 = tf.expand_dims(tf.reduce_mean(pred_force[features['n_particles_per_example'][0]:], 0), 0)
+    pred_force = tf.concat([pred_force1, pred_force2], 0)
+    loss2 = tf.reduce_mean((pred_force - target_force)**2)
+
+    loss = loss1 + loss2  # added
+
     global_step = tf.train.get_global_step()
     # Set learning rate to decay from 1e-4 to 1e-6 exponentially.
     min_lr = 1e-6
@@ -368,36 +438,48 @@ def get_one_step_estimator_fn(data_path,
     train_op = opt.minimize(loss, global_step)
 
     # Calculate next position and add some additional eval metrics (only eval).
-    predicted_next_position = simulator(
-        position_sequence=features['position'],
-        n_particles_per_example=features['n_particles_per_example'],
-        particle_types=features['particle_type'],
-        global_context=features.get('step_context'))
+    # predicted_next_position = simulator(  # removed
+    predicted_next_position, predicted_next_force = simulator(  # added
+      position_sequence=features['position'],
+      n_particles_per_example=features['n_particles_per_example'],
+      particle_types=features['particle_type'],
+      global_context=features.get('step_context'))
 
-    predictions = {'predicted_next_position': predicted_next_position}
+    # ...added:
+    predictions = {
+      'predicted_next_position_force': tf.concat(
+        [predicted_next_position, predicted_next_force], 1),
+    }
 
     eval_metrics_ops = {
-        'loss_mse': tf.metrics.mean_squared_error(
-            pred_acceleration, target_acceleration),
-        'one_step_position_mse': tf.metrics.mean_squared_error(
-            predicted_next_position, target_next_position)
+      'loss_mse': tf.metrics.mean_squared_error(
+        pred_acceleration, target_acceleration),
+      'one_step_position_mse': tf.metrics.mean_squared_error(
+        predicted_next_position, target_next_position),
+
+      # added: If batch size is 1:
+      # 'loss_force_mse': tf.metrics.mean_squared_error(
+      #   tf.reduce_mean(pred_force, 0), target_force),
+      # added: If batch size is 2:
+      'loss_force_mse': tf.metrics.mean_squared_error(pred_force, target_force)
     }
+
     return tf.estimator.EstimatorSpec(
-        mode=mode,
-        train_op=train_op,
-        loss=loss,
-        predictions=predictions,
-        eval_metric_ops=eval_metrics_ops)
+      mode=mode,
+      train_op=train_op,
+      loss=loss,
+      predictions=predictions,
+      eval_metric_ops=eval_metrics_ops)
 
   return estimator_fn
 
 
 def get_rollout_estimator_fn(data_path,
                              noise_std,
+                             message_passing_steps,
                              latent_size=128,
                              hidden_size=128,
-                             hidden_layers=2,
-                             message_passing_steps=10):
+                             hidden_layers=2):
   """Gets the model function for tf.estimator.Estimator."""
   metadata = _read_metadata(data_path)
 
@@ -415,11 +497,24 @@ def get_rollout_estimator_fn(data_path,
 
     num_steps = metadata['sequence_length'] - INPUT_SEQUENCE_LENGTH
     rollout_op = rollout(simulator, features, num_steps=num_steps)
+
     squared_error = (rollout_op['predicted_rollout'] -
                      rollout_op['ground_truth_rollout']) ** 2
-    loss = tf.reduce_mean(squared_error)
-    eval_ops = {'rollout_error_mse': tf.metrics.mean_squared_error(
-        rollout_op['predicted_rollout'], rollout_op['ground_truth_rollout'])}
+    loss1 = tf.reduce_mean(squared_error)  # ...added
+
+    # added:
+    squared_error = (rollout_op['predicted_forces'] - rollout_op['ground_truth_forces']) ** 2
+    loss2 = tf.reduce_mean(squared_error)
+
+    loss = loss1 + loss2 # added
+
+    eval_ops = {
+      'rollout_error_mse': tf.metrics.mean_squared_error(
+        rollout_op['predicted_rollout'], rollout_op['ground_truth_rollout']),
+      # added:
+      'force_error_mse': tf.metrics.mean_squared_error(
+        rollout_op['predicted_forces'], rollout_op['ground_truth_forces']),
+    }
 
     # Add a leading axis, since Estimator's predict method insists that all
     # tensors have a shared leading batch axis fo the same dims.
@@ -442,9 +537,24 @@ def _read_metadata(data_path):
 def main(_):
   """Train or evaluates the model."""
 
+  # added:
+  # gpus = tf.config.experimental.list_physical_devices('GPU')
+  # if gpus:
+  #   # Restrict TensorFlow to only use the first GPU
+  #   print(gpus)
+  #   try:
+  #     tf.config.experimental.set_visible_devices(gpus[int(FLAGS.gpu)], 'GPU')
+  #   except RuntimeError as e:
+  #     # Visible devices must be set at program startup
+  #     print(e)
+
+  # config = tf.ConfigProto()
+  # config.gpu_options.allow_growth = True
+  # tf.estimator.RunConfig(session_config=config)
+
   if FLAGS.mode in ['train', 'eval']:
     estimator = tf.estimator.Estimator(
-        get_one_step_estimator_fn(FLAGS.data_path, FLAGS.noise_std),
+        get_one_step_estimator_fn(FLAGS.data_path, FLAGS.noise_std, FLAGS.mssg),
         model_dir=FLAGS.model_path)
     if FLAGS.mode == 'train':
       # Train all the way through.
@@ -462,8 +572,11 @@ def main(_):
   elif FLAGS.mode == 'eval_rollout':
     if not FLAGS.output_path:
       raise ValueError('A rollout path must be provided.')
+    
+    start = timeit.default_timer()  # added
+
     rollout_estimator = tf.estimator.Estimator(
-        get_rollout_estimator_fn(FLAGS.data_path, FLAGS.noise_std),
+        get_rollout_estimator_fn(FLAGS.data_path, FLAGS.noise_std, FLAGS.mssg),
         model_dir=FLAGS.model_path)
 
     # Iterate through rollouts saving them one by one.
@@ -481,6 +594,15 @@ def main(_):
         os.mkdir(FLAGS.output_path)
       with open(filename, 'wb') as file:
         pickle.dump(example_rollout, file)
+    
+    stop = timeit.default_timer()  # added
+
+    # added:
+    time = timeit.timeit(lambda: rollout_estimator.predict(
+        input_fn=get_input_fn(FLAGS.data_path, batch_size=1,
+                              mode='rollout', split=FLAGS.eval_split)), number=1)
+    print('Time (with serializing output): ', stop - start)
+    print('Time: ', time)
 
 if __name__ == '__main__':
   tf.disable_v2_behavior()

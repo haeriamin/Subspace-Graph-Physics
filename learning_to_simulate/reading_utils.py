@@ -34,8 +34,19 @@ _FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT['step_context'] = tf.io.VarLenFeature(
 _FEATURE_DESCRIPTION_WITH_FORCE = _FEATURE_DESCRIPTION.copy()
 _FEATURE_DESCRIPTION_WITH_FORCE['force'] = tf.io.VarLenFeature(tf.string)
 
+# added:
+_FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT_FORCE = _FEATURE_DESCRIPTION.copy()
+_FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT_FORCE[
+    'step_context'] = tf.io.VarLenFeature(tf.string)
+_FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT_FORCE[
+    'force'] = tf.io.VarLenFeature(tf.string)
+
 _FEATURE_DTYPES = {
     'position': {
+        'in': np.float32,
+        'out': tf.float32
+    },
+    'step_context': {
         'in': np.float32,
         'out': tf.float32
     },
@@ -44,10 +55,6 @@ _FEATURE_DTYPES = {
         'in': np.float32,
         'out': tf.float32
     },
-    'step_context': {
-        'in': np.float32,
-        'out': tf.float32
-    }
 }
 
 _CONTEXT_FEATURES = {
@@ -67,7 +74,7 @@ def convert_to_tensor(x, encoded_dtype):
   return out
 
 
-def parse_serialized_simulation_example(example_proto, metadata):
+def parse_serialized_simulation_example(example_proto, metadata, FORCE=False):
   """Parses a serialized simulation tf.SequenceExample.
 
   Args:
@@ -81,9 +88,12 @@ def parse_serialized_simulation_example(example_proto, metadata):
 
   """
 
-  if 'context_mean' in metadata:
-    feature_description = _FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT
+  # TODO: what if we have both force and context_mean
   # added:
+  if 'context_mean' in metadata and 'rigid_body_force_mean' in metadata:
+    feature_description = _FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT_FORCE
+  elif 'context_mean' in metadata:
+    feature_description = _FEATURE_DESCRIPTION_WITH_GLOBAL_CONTEXT
   elif 'rigid_body_force_mean' in metadata:
     feature_description = _FEATURE_DESCRIPTION_WITH_FORCE
   else:
@@ -93,9 +103,6 @@ def parse_serialized_simulation_example(example_proto, metadata):
       example_proto,
       context_features=_CONTEXT_FEATURES,
       sequence_features=feature_description)
-
-  # t1 = context['particle_type']
-  # t2 = parsed_features['position']
 
   for feature_key, item in parsed_features.items():
     convert_fn = functools.partial(
@@ -108,13 +115,12 @@ def parse_serialized_simulation_example(example_proto, metadata):
   # for all frames used in the paper.
   position_shape = [metadata['sequence_length'] + 1, -1, metadata['dim']]
 
-
   # Reshape positions to correct dim.
   parsed_features['position'] = tf.reshape(parsed_features['position'],
                                            position_shape)
 
   # added:
-  if 'rigid_body_force_mean' in metadata:
+  if FORCE:
     force_shape = [metadata['sequence_length'] + 1, metadata['dim']]                                     
     parsed_features['force'] = tf.reshape(parsed_features['force'], force_shape)
 
@@ -134,10 +140,10 @@ def parse_serialized_simulation_example(example_proto, metadata):
       Tout=[tf.int64])
   context['particle_type'] = tf.reshape(context['particle_type'], [-1])
 
-  return context, parsed_features  # , t1, t2
+  return context, parsed_features
 
 
-def split_trajectory(context, features, window_length=7):
+def split_trajectory(context, features, window_length=7, FORCE=False):
   """Splits trajectory into sliding windows."""
   # Our strategy is to make sure all the leading dimensions are the same size,
   # then we can use from_tensor_slices.
@@ -166,16 +172,15 @@ def split_trajectory(context, features, window_length=7):
 
   for idx in range(input_trajectory_length):
     pos_stack.append(features['position'][idx:idx + window_length])
-    
     # added:
-    if 'force' in features:
+    if FORCE:
       force_stack.append(features['force'][idx:idx + window_length])
-  
+
   # Get the corresponding positions
   model_input_features['position'] = tf.stack(pos_stack)
 
   # added:
-  if 'force' in features:
+  if FORCE:
     model_input_features['force'] = tf.stack(force_stack)
 
   return tf.data.Dataset.from_tensor_slices(model_input_features)
