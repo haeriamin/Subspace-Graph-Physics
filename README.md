@@ -2,7 +2,7 @@
 
 This is a computationally efficient version of "Learning To Simulate" developed by [DeepMind and Stanford](https://github.com/deepmind/deepmind-research/tree/master/learning_to_simulate) for real-time physics simulation, specially granular flows and their interactions with rigid bodies. The approach is developed under the supervision of [Prof. Krzysztof Skonieczny (Concordia)](http://users.encs.concordia.ca/~kskoniec/).
 
-<img src="https://github.com/haeriamin/files/blob/master/excav_ml_1.gif" alt="drawing" width="820"><img src="https://github.com/haeriamin/files/blob/master/excav_ml_4.gif" alt="drawing" width="820">
+<img src="https://github.com/haeriamin/files/blob/master/excav_ml_4.gif" alt="drawing" width="820">
 
 
 <!-- ## Code structure
