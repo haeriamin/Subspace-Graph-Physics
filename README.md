@@ -2,11 +2,11 @@
 
 This is a computationally efficient version of "Learning To Simulate" developed by [DeepMind and Stanford](https://github.com/deepmind/deepmind-research/tree/master/learning_to_simulate) for real-time physics simulation, specially granular flows and their interactions with rigid bodies. The approach is developed under the supervision of [Prof. K. Skonieczny (Concordia)](http://users.encs.concordia.ca/~kskoniec/).
 
-The particle positions and velocities, and rigid body interaction forces are compared below:
+The particle positions and velocities, and rigid body interaction forces, in a 3D excavation configuration, are compared below:
 
 <img src="https://github.com/haeriamin/files/blob/master/excav_ml_4.gif" alt="drawing" width="820">
 
-## Highlights
+# Highlights
 
 * We train the graph network (GN) model in subspace by performing Principal Component Analysis (PCA).
 
