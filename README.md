@@ -72,7 +72,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 * pickle -->
 
 # Bibtex
-While we are preparing our journal paper, please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeexplore.ieee.org/abstract/document/9438132)] if you use this code for your research: 
+Please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeexplore.ieee.org/abstract/document/9438132)] if you use this code for your research: 
 ```
 @INPROCEEDINGS{9438132,
     author={Haeri, A. and Skonieczny, K.},
