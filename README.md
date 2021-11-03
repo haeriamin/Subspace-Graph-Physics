@@ -88,11 +88,11 @@ Please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeex
 and/or
 ```
 @misc{haeri2021threedimensional,
-      title={Three-dimensional granular flow continuum modeling via material point method with hyperelastic nonlocal granular fluidity}, 
-      author={Amin Haeri and Krzysztof Skonieczny},
-      year={2021},
-      eprint={2111.01523},
-      archivePrefix={arXiv},
-      primaryClass={cond-mat.soft}
+    title={Three-dimensional granular flow continuum modeling via material point method with hyperelastic nonlocal granular fluidity}, 
+    author={Amin Haeri and Krzysztof Skonieczny},
+    year={2021},
+    eprint={2111.01523},
+    archivePrefix={arXiv},
+    primaryClass={cond-mat.soft}
 }
 ```
