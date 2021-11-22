@@ -1,5 +1,6 @@
 # Subspace Graph Physics: <br /> Real-Time Rigid Body-Driven Granular Flow Simulation
-#### [[Paper](https://ieeexplore.ieee.org/abstract/document/9438132)]
+#### [[Paper 1](https://arxiv.org/abs/2111.10206)] [[Paper 2](https://ieeexplore.ieee.org/abstract/document/9438132)]
+
 
 This is a <strong>computationally efficient</strong> version of "Learning To Simulate" developed by [DeepMind](https://deepmind.com/research/publications/Learning-to-Simulate-Complex-Physics-with-Graph-Networks) and [Stanford](https://cs.stanford.edu/people/jure) researchers, for <strong>real-time 3D</strong> physics simulations, specially granular flows and their interactions with rigid bodies. The approach is developed under the supervision of Prof. [K. Skonieczny](http://users.encs.concordia.ca/~kskoniec/) (Concordia).
 
@@ -74,6 +75,17 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 # Bibtex
 Please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeexplore.ieee.org/abstract/document/9438132)] if you use this code for your research: 
 ```
+@misc{haeri2021subspace,
+    title={Subspace Graph Physics: Real-Time Rigid Body-Driven Granular Flow Simulation}, 
+    author={Amin Haeri and Krzysztof Skonieczny},
+    year={2021},
+    eprint={2111.10206},
+    archivePrefix={arXiv},
+    primaryClass={cs.LG}
+}
+```
+and/or
+```
 @INPROCEEDINGS{9438132,
     author={Haeri, A. and Skonieczny, K.},
     booktitle={2021 IEEE Aerospace Conference (50100)},
@@ -83,16 +95,5 @@ Please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeex
     number={},
     pages={1-9},
     doi={10.1109/AERO50100.2021.9438132}
-}
-```
-and/or
-```
-@misc{haeri2021threedimensional,
-    title={Three-dimensional granular flow continuum modeling via material point method with hyperelastic nonlocal granular fluidity}, 
-    author={Amin Haeri and Krzysztof Skonieczny},
-    year={2021},
-    eprint={2111.01523},
-    archivePrefix={arXiv},
-    primaryClass={cond-mat.soft}
 }
 ```
