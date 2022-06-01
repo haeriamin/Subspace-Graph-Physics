@@ -21,7 +21,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 
 # Install and Run Demo
 
-1. Train a model:
+1. Train:
 
     ```python
     python3 -m learning_to_simulate.train \
@@ -32,7 +32,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
     --model_path=./learning_to_simulate/models/Excavation_PCA
     ```
 
-2. Generate some trajectory rollouts on the test set:
+2. Test:
 
     ```python
     python3 -m learning_to_simulate.train \
@@ -43,7 +43,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
     --output_path=./learning_to_simulate/rollouts/Excavation_PCA
     ```
 
-3. Visualize a trajectory:
+3. Visualize:
 
     * 2D plot:
 
@@ -63,9 +63,8 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
         --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA/rollout_test_0.pkl
         ```
 
-* Optional setup for RTX30 and Cuda11
+* (Optional) [Install TensorFlow 1.15 for NVIDIA RTX30 GPUs (without docker or CUDA install)](https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/)
 
-    Follow this [page](https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/).
 
 # Bibtex
 Please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeexplore.ieee.org/abstract/document/9438132)] if you use this code for your research: 
