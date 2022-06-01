@@ -34,7 +34,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
         pip install -r requirements.txt
         ```
 
-* Train:
+* Train
 
     ```python
     python3 -m learning_to_simulate.train \
@@ -45,7 +45,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
     --model_path=./learning_to_simulate/models/Excavation_PCA
     ```
 
-* Test:
+* Test
 
     ```python
     python3 -m learning_to_simulate.train \
@@ -56,7 +56,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
     --output_path=./learning_to_simulate/rollouts/Excavation_PCA
     ```
 
-* Visualize:
+* Visualize
 
     * 2D plot:
 
