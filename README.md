@@ -6,6 +6,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 
 <img src="https://github.com/haeriamin/files/blob/master/excav_ml_4.gif" alt="drawing" width="820">
 
+
 # Highlights
 
 * We train the graph network (GN) model in subspace by performing Principal Component Analysis (PCA).
@@ -21,7 +22,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 
 # Install and Run Demo
 
-0. Install
+* Install
 
     * Install Python (tested on version 3.7)
 
@@ -33,7 +34,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
         pip install -r requirements.txt
         ```
 
-1. Train:
+* Train:
 
     ```python
     python3 -m learning_to_simulate.train \
@@ -44,7 +45,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
     --model_path=./learning_to_simulate/models/Excavation_PCA
     ```
 
-2. Test:
+* Test:
 
     ```python
     python3 -m learning_to_simulate.train \
@@ -55,7 +56,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
     --output_path=./learning_to_simulate/rollouts/Excavation_PCA
     ```
 
-3. Visualize:
+* Visualize:
 
     * 2D plot:
 
