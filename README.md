@@ -1,5 +1,5 @@
 # Subspace Graph Physics: <br /> Real-Time Rigid Body-Driven Granular Flow Simulation
-#### [[Paper 1](https://arxiv.org/abs/2111.10206)] [[Paper 2](https://ieeexplore.ieee.org/abstract/document/9438132)]
+#### [Paper 1](https://arxiv.org/abs/2111.10206) | [Paper 2](https://ieeexplore.ieee.org/abstract/document/9438132)
 
 
 This is a <strong>computationally efficient</strong> version of "Learning To Simulate" developed by [DeepMind](https://deepmind.com/research/publications/Learning-to-Simulate-Complex-Physics-with-Graph-Networks) and [Stanford](https://cs.stanford.edu/people/jure) researchers, for <strong>real-time 3D</strong> physics simulations, specially granular flows and their interactions with rigid bodies. The approach is developed under the supervision of Prof. [K. Skonieczny](http://users.encs.concordia.ca/~kskoniec/) (Concordia).
@@ -65,9 +65,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 
 * Optional setup for RTX30 and Cuda11
 
-    Follow the following pages.
-
-        [[Page 1](https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/)] and [[Page 2](https://www.digitalocean.com/community/tutorials/how-to-install-anaconda-on-ubuntu-18-04-quickstart)]
+    Follow this [page](https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/).
 
 # Bibtex
 Please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeexplore.ieee.org/abstract/document/9438132)] if you use this code for your research: 
