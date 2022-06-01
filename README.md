@@ -1,5 +1,5 @@
 # Subspace Graph Physics: <br /> Real-Time Rigid Body-Driven Granular Flow Simulation
-#### [Paper 1](https://arxiv.org/abs/2111.10206) | [Paper 2](https://ieeexplore.ieee.org/abstract/document/9438132)
+#### [[Paper 1](https://arxiv.org/abs/2111.10206)] [[Paper 2](https://ieeexplore.ieee.org/abstract/document/9438132)]
 
 
 This is a <strong>computationally efficient</strong> version of "Learning To Simulate" developed by [DeepMind](https://deepmind.com/research/publications/Learning-to-Simulate-Complex-Physics-with-Graph-Networks) and [Stanford](https://cs.stanford.edu/people/jure) researchers, for <strong>real-time 3D</strong> physics simulations, specially granular flows and their interactions with rigid bodies. The approach is developed under the supervision of Prof. [K. Skonieczny](http://users.encs.concordia.ca/~kskoniec/) (Concordia).
@@ -20,6 +20,18 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 
 
 # Install and Run Demo
+
+0. Install
+
+    * Install Python (tested on version 3.7)
+
+    * (Optional) [Install TensorFlow 1.15 for NVIDIA RTX30 GPUs (without docker or CUDA install)](https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/)
+
+    * Run
+
+        ```bash
+        pip install -r requirements.txt
+        ```
 
 1. Train:
 
@@ -62,8 +74,6 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
         --data_path=./learning_to_simulate/datasets/Excavation_PCA \
         --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA/rollout_test_0.pkl
         ```
-
-* (Optional) [Install TensorFlow 1.15 for NVIDIA RTX30 GPUs (without docker or CUDA install)](https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/)
 
 
 # Bibtex
