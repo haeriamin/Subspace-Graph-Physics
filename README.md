@@ -23,43 +23,51 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 
 1. Train a model:
 
-`python3 -m learning_to_simulate.train \
-  --mode=train \
-  --eval_split=train \
-  --batch_size=2 \
-  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
-  --model_path=./learning_to_simulate/models/Excavation_PCA`
+    ```python
+    python3 -m learning_to_simulate.train \
+    --mode=train \
+    --eval_split=train \
+    --batch_size=2 \
+    --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+    --model_path=./learning_to_simulate/models/Excavation_PCA
+    ```
 
 2. Generate some trajectory rollouts on the test set:
 
-`python3 -m learning_to_simulate.train \
-  --mode=eval_rollout \
-  --eval_split=test \
-  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
-  --model_path=./learning_to_simulate/models/Excavation_PCA \
-  --output_path=./learning_to_simulate/rollouts/Excavation_PCA`
+    ```python
+    python3 -m learning_to_simulate.train \
+    --mode=eval_rollout \
+    --eval_split=test \
+    --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+    --model_path=./learning_to_simulate/models/Excavation_PCA \
+    --output_path=./learning_to_simulate/rollouts/Excavation_PCA
+    ```
 
 3. Visualize a trajectory:
 
-2D plot:
+    * 2D plot:
 
-`python -m learning_to_simulate.render_rollout_2d_force \
-  --plane=xy \
-  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
-  --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA`
+        ```python
+        python -m learning_to_simulate.render_rollout_2d_force \
+        --plane=xy \
+        --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+        --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA
+        ```
 
-3D plot:
+    * 3D plot:
 
-`python -m learning_to_simulate.render_rollout_3d_force \
-  --fullspace=True \
-  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
-  --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA/rollout_test_0.pkl`
+        ```python
+        python -m learning_to_simulate.render_rollout_3d_force \
+        --fullspace=True \
+        --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+        --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA/rollout_test_0.pkl
+        ```
 
 * Optional setup for RTX30 and Cuda11
 
-Follow the following pages.
+    Follow the following pages.
 
-[[Page 1](https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/)] and [[Page 2](https://www.digitalocean.com/community/tutorials/how-to-install-anaconda-on-ubuntu-18-04-quickstart)]
+        [[Page 1](https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/)] and [[Page 2](https://www.digitalocean.com/community/tutorials/how-to-install-anaconda-on-ubuntu-18-04-quickstart)]
 
 # Bibtex
 Please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeexplore.ieee.org/abstract/document/9438132)] if you use this code for your research: 
