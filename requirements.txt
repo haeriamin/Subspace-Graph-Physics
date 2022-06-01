@@ -7,4 +7,5 @@ tensorflow_probability<0.9
 sklearn
 dm-tree
 matplotlib
-pandas==1.1.5
+pandas
+ffmpeg-python

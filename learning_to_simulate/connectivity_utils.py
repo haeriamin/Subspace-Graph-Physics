@@ -23,6 +23,7 @@ from sklearn import neighbors
 import tensorflow.compat.v1 as tf
 
 
+# added
 def _compute_connectivity(positions, radius, add_self_edges):
   """Get the indices of connected edges with radius connectivity.
   Args:

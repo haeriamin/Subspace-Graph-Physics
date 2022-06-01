@@ -18,59 +18,39 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 
 * The particle positions and velocities, and rigid body interaction forces are compared above.
 
-<!-- ## Code structure
 
-* `run.py`: Runs the optimization.
+# Install and Run Demo
 
-    * The initial, lower and upper bounds of optimization variables are defined here.
-        ```python
-        X0 = [,]
-        LB = [,]
-        UB = [,]
-        ```
+1. Train a model:
+`python3 -m learning_to_simulate.train \`
+  `--mode=train \`
+  `--eval_split=train \`
+  `--batch_size=2 \`
+  `--data_path=./learning_to_simulate/datasets/Excavation_PCA \`
+  `--model_path=./learning_to_simulate/models/Excavation_PCA`
 
-    * Some other settings including loading/saving optimal solution, and excavation depth and time can also be set.
-        ```python
-        load = True/False
-        save = True/False
-        depths = [,]  # [m]
-        sim_times = [,]  # [sec]
-        ```
+2. Generate some trajectory rollouts on the test set:
+`python3 -m learning_to_simulate.train \
+  --mode=eval_rollout \
+  --eval_split=test \
+  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+  --model_path=./learning_to_simulate/models/Excavation_PCA \
+  --output_path=./learning_to_simulate/rollouts/Excavation_PCA`
 
+3. Visualize a trajectory:
+2D plot:
+`python -m learning_to_simulate.render_rollout_2d_force \
+  --plane=xy \
+  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+  --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA`
+3D plot:
+`python -m learning_to_simulate.render_rollout_3d_force \
+  --fullspace=True \
+  --data_path=./learning_to_simulate/datasets/Excavation_PCA \
+  --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA/rollout_test_0.pkl`
 
-* `constr_nm.py`: Implements the constrained Nelder-Mead method [(reference)](https://github.com/alexblaessle/constrNMPy).
-
-* `nelder_mead.py`: Implements the Nelder-Mead method [(reference)](https://github.com/scipy/scipy/blob/master/scipy/optimize/optimize.py).
-
-    * This is modified to terminate the optimization loop when no significant error changes happen (e.g. `<1`%) during the last specified iterations by setting e.g. `history = 10` as fallows:
-
-        ```python
-        if iterations > history+2:
-            for i in range(2,history+2):
-                fval_sum += abs(fval_history[-1] - fval_history[-i])
-            if fval_sum/history < 1:
-                break
-        ```
-
-* `obj_func.py`: Implements the objective function.
-
-    * The Vortex (excavation) model is called here and implemented in:
-
-        ```python
-        def run_vortex(self, x, depth):
-            ...
-        ```
-
-    * The mean absolute percentage error (MAPE) is calculated using the results from Vortex and experiment.
-
-    * The Vortex files and reference (experimental) results should already be provided in folder `input/`.
-
-
-## Requirements
-
-* VxSim
-* numpy
-* pickle -->
+* Optional setup for RTX30 and Cuda11
+Visit these web pages: [[page 1](https://www.pugetsystems.com/labs/hpc/How-To-Install-TensorFlow-1-15-for-NVIDIA-RTX30-GPUs-without-docker-or-CUDA-install-2005/)] and [[page 2](https://www.digitalocean.com/community/tutorials/how-to-install-anaconda-on-ubuntu-18-04-quickstart)]
 
 # Bibtex
 Please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeexplore.ieee.org/abstract/document/9438132)] if you use this code for your research: 
