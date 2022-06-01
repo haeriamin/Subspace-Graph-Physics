@@ -58,7 +58,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 
 * Visualize
 
-    * 2D plot:
+    * 2D plot
 
         ```python
         python -m learning_to_simulate.render_rollout_2d_force \
@@ -67,7 +67,7 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
         --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA
         ```
 
-    * 3D plot:
+    * 3D plot
 
         ```python
         python -m learning_to_simulate.render_rollout_3d_force \
