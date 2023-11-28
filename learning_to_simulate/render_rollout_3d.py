@@ -193,7 +193,7 @@ def main(unused_argv):
 
   anim = camera.animate(blit=True, interval=15)
   #now = datetime.datetime.now()
-  fname = FLAGS.rollout_path.split(".pkl")[0] + "_3D_Force.mp4"
+  fname = FLAGS.rollout_path.split(".pkl")[0] + "_3D_Force_" + ["sub","full"][int(FLAGS.fullspace)] +".mp4"
   anim.save(fname, dpi=300)
 
 
