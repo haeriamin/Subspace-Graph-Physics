@@ -192,8 +192,9 @@ def main(unused_argv):
     cbar.ax.set_ylabel('Velocity magnitude (subspace)', rotation=270)
 
   anim = camera.animate(blit=True, interval=15)
-  now = datetime.datetime.now()
-  anim.save(str(now.strftime("%Y-%m-%d %H:%M:%S"))+'.mp4', dpi=300)
+  #now = datetime.datetime.now()
+  fname = FLAGS.rollout_path.split(".pkl")[0] + "_3D_Force.mp4"
+  anim.save(fname, dpi=300)
 
 
 if __name__ == "__main__":
