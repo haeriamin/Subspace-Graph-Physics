@@ -37,23 +37,13 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 * Train
 
     ```python
-    python3 -m learning_to_simulate.train \
-    --mode=train \
-    --eval_split=train \
-    --batch_size=2 \
-    --data_path=./learning_to_simulate/datasets/Excavation_PCA \
-    --model_path=./learning_to_simulate/models/Excavation_PCA
+    python -m learning_to_simulate.train --mode=train --eval_split=train --batch_size=2 --data_path=./learning_to_simulate/datasets/Excavation_PCA --model_path=./learning_to_simulate/models/Excavation_PCA
     ```
 
 * Test
 
     ```python
-    python3 -m learning_to_simulate.train \
-    --mode=eval_rollout \
-    --eval_split=test \
-    --data_path=./learning_to_simulate/datasets/Excavation_PCA \
-    --model_path=./learning_to_simulate/models/Excavation_PCA \
-    --output_path=./learning_to_simulate/rollouts/Excavation_PCA
+    python -m learning_to_simulate.train --mode=eval_rollout --eval_split=test --data_path=./learning_to_simulate/datasets/Excavation_PCA --model_path=./learning_to_simulate/models/Excavation_PCA --output_path=./learning_to_simulate/rollouts/Excavation_PCA
     ```
 
 * Visualize
@@ -61,19 +51,13 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
     * 2D plot
 
         ```python
-        python -m learning_to_simulate.render_rollout_2d_force \
-        --plane=xy \
-        --data_path=./learning_to_simulate/datasets/Excavation_PCA \
-        --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA
+        python -m learning_to_simulate.render_rollout_2d_force --plane=xy --data_path=./learning_to_simulate/datasets/Excavation_PCA --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA/rollout_test_0.pkl
         ```
 
     * 3D plot
 
         ```python
-        python -m learning_to_simulate.render_rollout_3d_force \
-        --fullspace=True \
-        --data_path=./learning_to_simulate/datasets/Excavation_PCA \
-        --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA/rollout_test_0.pkl
+        python -m learning_to_simulate.render_rollout_3d --fullspace=True --data_path=./learning_to_simulate/datasets/Excavation_PCA --rollout_path=./learning_to_simulate/rollouts/Excavation_PCA/rollout_test_0.pkl
         ```
 
 
