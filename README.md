@@ -4,7 +4,7 @@
 
 Subspace Graph Physics is an <strong>accurate, real-time</strong> engineering approach for 3D large-scale physics simulations.
 This is a computationally efficient version of "Learning To Simulate" developed by [DeepMind](https://github.com/google-deepmind/deepmind-research/tree/master/learning_to_simulate).
-This approach can work with a single desktop GPU (with moderate vRAM) in training and can perform 2-3 orders of magnitude faster than physics-based methods (with similar accuracy).
+This approach can work with a single desktop GPU (with ~10GB vRAM) in training and can perform 2-3 orders of magnitude faster than physics-based methods (with similar accuracy) in inference on CPU.
 
 <img src="https://github.com/haeriamin/files/blob/master/excav_ml_4.gif" alt="drawing" width="820">
 
@@ -19,7 +19,7 @@ This approach can work with a single desktop GPU (with moderate vRAM) in trainin
 
 * The rollout runtime is under 1 sec/sec, and the training runtime is 60 global-step/sec (on NVIDIA RTX 3080).
 
-* The particle positions and velocities, and rigid body interaction forces are compared above.
+* The particle positions and velocities, and rigid body interaction forces are compared in the video above.
 
 
 # Install and Run Demo
@@ -65,8 +65,10 @@ This approach can work with a single desktop GPU (with moderate vRAM) in trainin
 
 # Bibtex
 Please cite our papers
-[[1]([https://arxiv.org/abs/2111.01523](https://www.sciencedirect.com/science/article/pii/S0952197624009230)),
-[2](https://ieeexplore.ieee.org/abstract/document/9438132)]
+[
+[1](https://www.sciencedirect.com/science/article/pii/S0952197624009230),
+[2](https://ieeexplore.ieee.org/abstract/document/9438132)
+]
 if you use this code for your research: 
 ```
 @article{HAERI2024108765,
