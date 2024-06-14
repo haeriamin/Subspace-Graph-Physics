@@ -1,4 +1,4 @@
-# Subspace Graph Physics: <br /> Real-Time Rigid Body-Driven Granular Flow Simulation
+# Subspace Graph Physics: <br /> Accurate and Real-Time Physics Simulation Approach
 #### [[Paper](https://www.sciencedirect.com/science/article/pii/S0952197624009230)]
 
 
