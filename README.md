@@ -2,7 +2,7 @@
 #### [[Paper](https://www.sciencedirect.com/science/article/pii/S0952197624009230)]
 
 
-Subspace Graph Physics is an <strong>accurate, real-time</strong> engineering approach for 3D large-scale physics simulations.
+Subspace Graph Physics is an <strong>accurate, real-time</strong> engineering approach for large-scale 3D/2D physics simulations.
 This is a computationally efficient version of "Learning To Simulate" developed by [DeepMind](https://github.com/google-deepmind/deepmind-research/tree/master/learning_to_simulate).
 This approach can work with a single desktop GPU (with ~10GB vRAM) in training and can perform 2-3 orders of magnitude faster than physics-based methods (with similar accuracy) in inference on CPU.
 
