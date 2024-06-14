@@ -1,8 +1,10 @@
 # Subspace Graph Physics: <br /> Real-Time Rigid Body-Driven Granular Flow Simulation
-#### [[Paper 1](https://arxiv.org/abs/2111.10206)] [[Paper 2](https://ieeexplore.ieee.org/abstract/document/9438132)]
+#### [[Paper](https://www.sciencedirect.com/science/article/pii/S0952197624009230)]
 
 
-This is a <strong>computationally efficient</strong> version of "Learning To Simulate" developed by [DeepMind](https://www.deepmind.com/publications/learning-to-simulate-complex-physics-with-graph-networks) and [Stanford](https://www.youtube.com/watch?v=JAB_plj2rbA&list=PLoROMvodv4rPLKxIpqhjhPgdQy7imNkDn) researchers, for <strong>real-time 3D</strong> physics simulations (e.g. for granular flows and their interactions with rigid bodies).
+Subspace Graph Physics is an <strong>accurate, real-time</strong> engineering approach for 3D large-scale physics simulations.
+This is a computationally efficient version of "Learning To Simulate" developed by [DeepMind](https://github.com/google-deepmind/deepmind-research/tree/master/learning_to_simulate).
+This approach can work with a single desktop GPU (with moderate vRAM) in training and can perform 2-3 orders of magnitude faster than physics-based methods (with similar accuracy).
 
 <img src="https://github.com/haeriamin/files/blob/master/excav_ml_4.gif" alt="drawing" width="820">
 
@@ -62,15 +64,22 @@ This is a <strong>computationally efficient</strong> version of "Learning To Sim
 
 
 # Bibtex
-Please cite our papers [[1](https://arxiv.org/abs/2111.01523), [2](https://ieeexplore.ieee.org/abstract/document/9438132)] if you use this code for your research: 
+Please cite our papers
+[[1]([https://arxiv.org/abs/2111.01523](https://www.sciencedirect.com/science/article/pii/S0952197624009230)),
+[2](https://ieeexplore.ieee.org/abstract/document/9438132)]
+if you use this code for your research: 
 ```
-@misc{haeri2021subspace,
-    title={Subspace Graph Physics: Real-Time Rigid Body-Driven Granular Flow Simulation}, 
-    author={Amin Haeri and Krzysztof Skonieczny},
-    year={2021},
-    eprint={2111.10206},
-    archivePrefix={arXiv},
-    primaryClass={cs.LG}
+@article{HAERI2024108765,
+   title = {Subspace graph networks for real-time granular flow simulation with applications to machine-terrain interactions},
+   journal = {Engineering Applications of Artificial Intelligence},
+   volume = {135},
+   pages = {108765},
+   year = {2024},
+   issn = {0952-1976},
+   doi = {https://doi.org/10.1016/j.engappai.2024.108765},
+   url = {https://www.sciencedirect.com/science/article/pii/S0952197624009230},
+   author = {Amin Haeri and Daniel Holz and Krzysztof Skonieczny},
+   keywords = {Real-time physics simulation, Geometric deep learning, Graph neural networks, Continuum mechanics, Experiment},
 }
 ```
 and/or
