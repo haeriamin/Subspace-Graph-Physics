@@ -65,11 +65,8 @@ This approach can work with a single desktop GPU (with ~10GB vRAM) in training a
 
 # Bibtex
 Please cite our papers
-[
-[1](https://www.sciencedirect.com/science/article/pii/S0952197624009230),
-[2](https://ieeexplore.ieee.org/abstract/document/9438132)
-]
-if you use this code for your research: 
+[[1](https://www.sciencedirect.com/science/article/pii/S0952197624009230), [2](https://ieeexplore.ieee.org/abstract/document/9438132)]
+if you use this code for your research:
 ```
 @article{HAERI2024108765,
    title = {Subspace graph networks for real-time granular flow simulation with applications to machine-terrain interactions},
